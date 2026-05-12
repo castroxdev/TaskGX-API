@@ -76,7 +76,7 @@ namespace TaskGX.API.Controllers
                 PrioridadeID = requisicao.PrioridadeID,
                 Concluida = requisicao.Concluida,
                 Arquivada = requisicao.Arquivada,
-                DataVencimento = requisicao.DataVencimento,
+                DataVencimento = NormalizarDataUtc(requisicao.DataVencimento),
                 Ordem = requisicao.Ordem,
                 DataCriacao = DateTime.UtcNow,
                 DataAtualizacao = DateTime.UtcNow
@@ -130,7 +130,7 @@ namespace TaskGX.API.Controllers
             tarefa.Tags = string.IsNullOrWhiteSpace(requisicao.Tags) ? null : requisicao.Tags.Trim();
             tarefa.Concluida = requisicao.Concluida;
             tarefa.Arquivada = requisicao.Arquivada;
-            tarefa.DataVencimento = requisicao.DataVencimento;
+            tarefa.DataVencimento = NormalizarDataUtc(requisicao.DataVencimento);
             tarefa.PrioridadeID = requisicao.PrioridadeID;
             tarefa.Ordem = requisicao.Ordem;
             tarefa.DataAtualizacao = DateTime.UtcNow;
@@ -181,6 +181,19 @@ namespace TaskGX.API.Controllers
             tarefa.DataAtualizacao = DateTime.UtcNow;
             await _contexto.SaveChangesAsync();
             return NoContent();
+        }
+
+        private static DateTime? NormalizarDataUtc(DateTime? data)
+        {
+            if (!data.HasValue)
+                return null;
+
+            return data.Value.Kind switch
+            {
+                DateTimeKind.Utc => data.Value,
+                DateTimeKind.Local => data.Value.ToUniversalTime(),
+                _ => DateTime.SpecifyKind(data.Value, DateTimeKind.Utc)
+            };
         }
     }
 }

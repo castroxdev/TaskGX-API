@@ -13,10 +13,14 @@ using TaskGX.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var stringConexao = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("String de conexao 'DefaultConnection' nao encontrada.");
+var stringConexao = ObterStringConexaoPostgres(builder.Configuration);
 
-builder.Services.AddDbContext<TaskGXContext>(options => options.UseMySQL(stringConexao));
+builder.Services.AddDbContext<TaskGXContext>(options =>
+    options.UseNpgsql(stringConexao, opcoesNpgsql =>
+        opcoesNpgsql.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorCodesToAdd: null)));
 
 builder.Services
     .AddOptions<ConfiguracoesJwt>()
@@ -182,4 +186,46 @@ static string CorrigirRequisitosSegurancaSwagger(string jsonSwagger)
         jsonSwagger,
         "\"security\"\\s*:\\s*\\[\\s*\\{\\s*\\}\\s*\\]",
         "\"security\": [{\"Bearer\": []}]");
+}
+
+static string ObterStringConexaoPostgres(IConfiguration configuration)
+{
+    var stringConexaoSupabase = configuration["SUPABASE_DB_CONNECTION"];
+    var stringConexao = !string.IsNullOrWhiteSpace(stringConexaoSupabase)
+        ? stringConexaoSupabase
+        : configuration.GetConnectionString("DefaultConnection");
+
+    if (string.IsNullOrWhiteSpace(stringConexao))
+        throw new InvalidOperationException("String de conexao 'DefaultConnection' nao encontrada.");
+
+    return NormalizarStringConexaoPostgres(stringConexao);
+}
+
+static string NormalizarStringConexaoPostgres(string stringConexao)
+{
+    if (!Uri.TryCreate(stringConexao, UriKind.Absolute, out var uri) ||
+        (uri.Scheme != "postgresql" && uri.Scheme != "postgres"))
+    {
+        return stringConexao;
+    }
+
+    var dadosUsuario = uri.UserInfo.Split(':', 2);
+    if (dadosUsuario.Length != 2)
+        throw new InvalidOperationException("A connection string PostgreSQL precisa conter usuario e senha.");
+
+    var usuario = Uri.UnescapeDataString(dadosUsuario[0]);
+    var senha = Uri.UnescapeDataString(dadosUsuario[1]);
+    var banco = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/'));
+    var porta = uri.Port > 0 ? uri.Port : 5432;
+
+    return string.Join(';', new[]
+    {
+        $"Host={uri.Host}",
+        $"Port={porta}",
+        $"Database={banco}",
+        $"Username={usuario}",
+        $"Password={senha}",
+        "SSL Mode=Require",
+        "Trust Server Certificate=true"
+    });
 }

@@ -36,6 +36,8 @@ namespace TaskGX.Data
                 entity.Property(e => e.CodigoVerificacaoExpiracao).HasColumnName("CodigoVerificacaoExpiracao");
                 entity.Property(e => e.CriadoEm).HasColumnName("Criado_em");
                 entity.Property(e => e.DataAtualizacao).HasColumnName("DataAtualizacao");
+
+                entity.HasIndex(e => e.Email).IsUnique();
             });
 
             modelBuilder.Entity<Prioridade>(entity =>
