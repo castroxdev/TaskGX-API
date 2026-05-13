@@ -39,5 +39,49 @@ namespace TaskGX.API.Controllers
                 usuario = new { usuario.ID, usuario.Nome, usuario.Email }
             });
         }
+
+        [HttpPost("google-login")]
+        public async Task<IActionResult> AutenticarComGoogle([FromBody] GoogleLoginDTO? dtoLogin)
+        {
+            if (dtoLogin == null || string.IsNullOrWhiteSpace(dtoLogin.IdToken))
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Falha na autenticacao com Google.",
+                    Detail = "Token Google nao informado.",
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+
+            var resultado = await _autenticacaoService.AutenticarComGoogleAsync(dtoLogin.IdToken);
+            if (!resultado.Sucesso || resultado.Usuario == null)
+            {
+                var problema = new ProblemDetails
+                {
+                    Title = "Falha na autenticacao com Google.",
+                    Detail = resultado.Mensagem,
+                    Status = resultado.StatusCode
+                };
+
+                if (resultado.StatusCode == StatusCodes.Status401Unauthorized)
+                    return Unauthorized(problema);
+
+                return StatusCode(resultado.StatusCode, problema);
+            }
+
+            var token = _tokenService.CriarToken(resultado.Usuario);
+
+            return Ok(new
+            {
+                token,
+                usuario = new
+                {
+                    resultado.Usuario.ID,
+                    resultado.Usuario.Nome,
+                    resultado.Usuario.Email,
+                    resultado.Usuario.Avatar
+                }
+            });
+        }
     }
 }
