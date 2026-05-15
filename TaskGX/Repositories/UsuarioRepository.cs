@@ -36,6 +36,31 @@ namespace TaskGX.API.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public Task<Usuario?> ObterPorEmailIgnorandoMaiusculasAsync(string email)
+        {
+            var emailNormalizado = (email ?? string.Empty).Trim().ToLowerInvariant();
+
+            return _contexto.Usuarios
+                .AsNoTracking()
+                .Where(usuario => usuario.Email.ToLower() == emailNormalizado)
+                .Select(usuario => new Usuario
+                {
+                    ID = usuario.ID,
+                    Nome = usuario.Nome,
+                    Email = usuario.Email,
+                    EmailPendente = usuario.EmailPendente,
+                    SenhaHash = usuario.SenhaHash,
+                    Avatar = usuario.Avatar,
+                    Ativo = usuario.Ativo,
+                    EmailVerificado = usuario.EmailVerificado,
+                    CodigoVerificacao = usuario.CodigoVerificacao,
+                    CodigoVerificacaoExpiracao = usuario.CodigoVerificacaoExpiracao,
+                    CriadoEm = usuario.CriadoEm,
+                    DataAtualizacao = usuario.DataAtualizacao
+                })
+                .FirstOrDefaultAsync();
+        }
+
         public Task<Usuario?> ObterPorIdAsync(int usuarioId)
         {
             return _contexto.Usuarios.AsNoTracking().FirstOrDefaultAsync(usuario => usuario.ID == usuarioId);
