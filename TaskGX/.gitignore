@@ -23,9 +23,11 @@ logs/
 ####################################
 # ASP.NET CORE - CONFIGS (IGNORAR)
 ####################################
-# Ignora appsettings por ambiente em qualquer pasta
+# Ignora appsettings locais com credenciais, mas permite o exemplo versionavel
+**/appsettings.json
 **/appsettings.Development.json
-**/appsettings.*
+**/appsettings.*.json
+!**/appsettings.example.json
 
 ####################################
 # SEGREDOS / AMBIENTE

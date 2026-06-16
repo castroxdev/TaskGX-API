@@ -64,10 +64,28 @@ builder.Services.AddScoped<AlteracaoEmailService>();
 builder.Services.AddScoped<EnvioEmailService>();
 builder.Services.AddScoped<TokenService>();
 
+var origensCorsPermitidas = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>()?
+    .Where(origem => !string.IsNullOrWhiteSpace(origem))
+    .Select(origem => origem.Trim())
+    .ToArray();
+
+if (origensCorsPermitidas is null || origensCorsPermitidas.Length == 0)
+{
+    origensCorsPermitidas =
+    [
+        "http://localhost:5173",
+        "https://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://127.0.0.1:5173"
+    ];
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("default", politica =>
-        politica.AllowAnyOrigin()
+        politica.WithOrigins(origensCorsPermitidas)
             .AllowAnyHeader()
             .AllowAnyMethod());
 });

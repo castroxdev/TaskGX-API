@@ -1,36 +1,93 @@
-@ -0,0 +1,247 @@
 # TaskGX API
 
-API REST do TaskGX para cadastro, autenticacao, verificacao de email e gestao de listas, tarefas e prioridades.
+TaskGX API e a API REST central do projeto TaskGX. Ela fornece os recursos
+necessarios para autenticar utilizadores, criar contas, verificar email e gerir
+listas, tarefas e prioridades. A API foi preparada para ser consumida por uma
+aplicacao web em React e tambem por uma aplicacao desktop que reutilize os
+mesmos dados e regras de autenticacao.
 
 ## Tecnologias
 
-- ASP.NET Core com .NET 10
+- ASP.NET Core Web API com .NET 10
+- JWT Authentication para proteger endpoints privados
 - Entity Framework Core
-- PostgreSQL/Supabase via Npgsql
-- JWT Bearer para rotas autenticadas
-- Swagger em ambiente de desenvolvimento
+- PostgreSQL/Supabase com provider Npgsql
+- Swagger/OpenAPI em ambiente de desenvolvimento
 
-## Configuracao
+## Funcionalidades principais
 
-Configure a conexao com o PostgreSQL/Supabase por variavel de ambiente ou user-secrets. A API aceita `SUPABASE_DB_CONNECTION` ou `ConnectionStrings:DefaultConnection`.
+- Autenticacao com email e senha por JWT
+- Registo/cadastro de utilizadores
+- Verificacao de email por codigo
+- Reenvio de codigo de verificacao
+- Consulta e atualizacao do utilizador autenticado
+- Alteracao de senha e solicitacao/confirmacao de alteracao de email
+- Gestao de listas do utilizador
+- Gestao de tarefas por lista
+- Consulta de prioridades
+- Documentacao interativa com Swagger
+
+## Configuracao segura
+
+Credenciais sensiveis nao devem ficar no `appsettings.json` versionado. Use
+User Secrets em desenvolvimento local ou variaveis de ambiente em ambientes de
+execucao.
+
+O projeto contem um ficheiro de referencia em
+`TaskGX/appsettings.example.json`, apenas com placeholders. Copie a estrutura
+necessaria para o seu ambiente local e configure valores reais fora do
+repositorio.
+
+Valores principais:
+
+- `ConnectionStrings:DefaultConnection` ou variavel `SUPABASE_DB_CONNECTION`
+- `Jwt:Chave`
+- `Jwt:Emissor`
+- `Jwt:Audiencia`
+- `Jwt:MinutosExpiracao`
+- `GoogleAuth:ClientId`
+- `ConfiguracoesEmail:Host`
+- `ConfiguracoesEmail:Porta`
+- `ConfiguracoesEmail:NomeUsuario`
+- `ConfiguracoesEmail:Senha`
+- `ConfiguracoesEmail:EmailRemetente`
+- `ConfiguracoesEmail:NomeRemetente`
+- `ConfiguracoesEmail:HabilitarSsl`
+- `Cors:AllowedOrigins`
+
+Exemplo com User Secrets:
 
 ```powershell
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=YOUR_SUPABASE_HOST;Port=5432;Database=postgres;Username=postgres;Password=YOUR_PASSWORD;SSL Mode=Require;Trust Server Certificate=true"
+cd TaskGX
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_DATABASE_CONNECTION_STRING"
+dotnet user-secrets set "Jwt:Chave" "YOUR_JWT_SECRET_KEY"
+dotnet user-secrets set "ConfiguracoesEmail:NomeUsuario" "YOUR_EMAIL"
+dotnet user-secrets set "ConfiguracoesEmail:Senha" "YOUR_EMAIL_APP_PASSWORD"
 ```
 
-Tambem configure as secoes:
-
-- `Jwt:Chave`, `Jwt:Emissor`, `Jwt:Audiencia`, `Jwt:MinutosExpiracao`
-- `GoogleAuth:ClientId`
-- `ConfiguracoesEmail:Host`, `ConfiguracoesEmail:Porta`, `ConfiguracoesEmail:NomeUsuario`, `ConfiguracoesEmail:Senha`, `ConfiguracoesEmail:EmailRemetente`, `ConfiguracoesEmail:NomeRemetente`, `ConfiguracoesEmail:HabilitarSsl`
-
-Os scripts de banco ficam em `database/supabase`. Para uma base nova, execute `schema.sql` e depois `seed_prioridades.sql`.
-
-## Executar localmente
+Para variaveis de ambiente, pode usar o formato hierarquico do ASP.NET Core:
 
 ```powershell
+$env:SUPABASE_DB_CONNECTION="YOUR_DATABASE_CONNECTION_STRING"
+$env:Jwt__Chave="YOUR_JWT_SECRET_KEY"
+$env:ConfiguracoesEmail__NomeUsuario="YOUR_EMAIL"
+$env:ConfiguracoesEmail__Senha="YOUR_EMAIL_APP_PASSWORD"
+```
+
+## Correr localmente
+
+Requisitos:
+
+- .NET SDK compativel com `net10.0`
+- Base de dados PostgreSQL/Supabase configurada
+- User Secrets ou variaveis de ambiente com as credenciais necessarias
+
+Comandos:
+
+```powershell
+cd TaskGX
 dotnet restore
+dotnet build
 dotnet run
 ```
 
@@ -39,210 +96,67 @@ Perfis locais configurados:
 - HTTP: `http://localhost:5192`
 - HTTPS: `https://localhost:7284`
 
-Em desenvolvimento, a documentacao interativa fica em `/swagger` e o JSON corrigido em `/swagger/v1/swagger-corrigido.json`.
+Em desenvolvimento, o Swagger fica disponivel em:
+
+- `https://localhost:7284/swagger`
+- `https://localhost:7284/swagger/v1/swagger-corrigido.json`
+
+O frontend React em desenvolvimento pode consumir a API a partir de:
+
+- `http://localhost:5173`
+
+## Base de dados
+
+Os scripts para PostgreSQL/Supabase ficam em `TaskGX/database/supabase`:
+
+- `schema.sql`
+- `seed_prioridades.sql`
+- `sync_sequences.sql`
+
+Para uma base nova, execute primeiro o `schema.sql` e depois o
+`seed_prioridades.sql`.
 
 ## Autenticacao
 
-As rotas marcadas como protegidas exigem o header:
+As rotas privadas exigem o header:
 
 ```http
-Authorization: Bearer SEU_TOKEN_JWT
+Authorization: Bearer YOUR_JWT_TOKEN
 ```
 
-Fluxo sugerido:
+Fluxo recomendado:
 
 1. Criar conta em `POST /api/cadastro`.
 2. Confirmar o email em `POST /api/verificacao/verificar-email`.
 3. Fazer login em `POST /api/autenticacao/login`.
-4. Usar o `token` retornado nas demais rotas protegidas.
+4. Usar o `token` retornado nas rotas protegidas.
 
-## Endpoints
+## Endpoints principais
 
-### Status
-
-| Metodo | Rota | Auth | Descricao |
+| Metodo | URL | JWT | Descricao |
 | --- | --- | --- | --- |
-| GET | `/` | Nao | Retorna nome, status e ambiente da API. |
-
-### Cadastro, login e verificacao
-
-| Metodo | Rota | Auth | Descricao |
-| --- | --- | --- | --- |
-| POST | `/api/cadastro` | Nao | Cria uma conta e envia codigo de verificacao. |
-| POST | `/api/autenticacao/login` | Nao | Autentica por email e senha. |
-| POST | `/api/autenticacao/google-login` | Nao | Autentica usando token do Google. |
-| POST | `/api/verificacao/verificar-email` | Nao | Confirma o email com codigo de 6 digitos. |
+| GET | `/` | Nao | Estado basico da API. |
+| POST | `/api/cadastro` | Nao | Regista um novo utilizador. |
+| POST | `/api/autenticacao/login` | Nao | Autentica com email e senha. |
+| POST | `/api/autenticacao/google-login` | Nao | Autentica com token do Google. |
+| POST | `/api/verificacao/verificar-email` | Nao | Verifica o email com codigo de 6 digitos. |
 | POST | `/api/verificacao/reenviar-codigo` | Nao | Reenvia o codigo de verificacao. |
+| GET | `/api/Usuarios/eu` | Sim | Obtem o utilizador autenticado. |
+| PUT | `/api/Usuarios/eu` | Sim | Atualiza o perfil do utilizador autenticado. |
+| PATCH | `/api/Usuarios/eu/senha` | Sim | Altera a senha do utilizador autenticado. |
+| POST | `/api/Usuarios/eu/email/solicitar-alteracao` | Sim | Solicita alteracao de email. |
+| POST | `/api/Usuarios/eu/email/confirmar-alteracao` | Sim | Confirma alteracao de email. |
+| GET | `/api/Listas` | Sim | Lista as listas do utilizador. |
+| POST | `/api/Listas` | Sim | Cria uma lista. |
+| PUT | `/api/Listas/{id}` | Sim | Atualiza uma lista. |
+| DELETE | `/api/Listas/{id}` | Sim | Remove uma lista. |
+| GET | `/api/Tarefas?listaId={listaId}` | Sim | Lista tarefas de uma lista. |
+| POST | `/api/Tarefas` | Sim | Cria uma tarefa. |
+| PUT | `/api/Tarefas/{id}` | Sim | Atualiza uma tarefa. |
+| DELETE | `/api/Tarefas/{id}` | Sim | Remove uma tarefa. |
+| POST | `/api/Tarefas/{id}/concluir` | Sim | Marca uma tarefa como concluida. |
+| GET | `/api/Prioridades` | Sim | Lista as prioridades disponiveis. |
 
-Payloads principais:
+Documentacao mais detalhada dos endpoints: `docs/API.md`.
 
-Cadastro:
-
-```json
-{
-  "nome": "Usuario TaskGX",
-  "email": "usuario@taskgx.com",
-  "senha": "Senha123!",
-  "confirmarSenha": "Senha123!"
-}
-```
-
-Login:
-
-```json
-{
-  "email": "usuario@taskgx.com",
-  "senha": "Senha123!"
-}
-```
-
-Login com Google:
-
-```json
-{
-  "idToken": "GOOGLE_ID_TOKEN"
-}
-```
-
-Verificacao de email:
-
-```json
-{
-  "email": "usuario@taskgx.com",
-  "codigo": "123456"
-}
-```
-
-### Usuario
-
-Todas as rotas abaixo sao protegidas.
-
-| Metodo | Rota | Descricao |
-| --- | --- | --- |
-| GET | `/api/Usuarios/eu` | Retorna o perfil do usuario autenticado. |
-| PUT | `/api/Usuarios/eu` | Atualiza nome e avatar do usuario autenticado. |
-| PATCH | `/api/Usuarios/eu/senha` | Altera a senha do usuario autenticado. |
-| POST | `/api/Usuarios/eu/email/solicitar-alteracao` | Solicita alteracao de email e envia codigo. |
-| POST | `/api/Usuarios/eu/email/confirmar-alteracao` | Confirma a alteracao de email com codigo de 6 digitos. |
-
-Payloads principais:
-
-Atualizar perfil:
-
-```json
-{
-  "nome": "Novo Nome",
-  "avatar": "https://exemplo.com/avatar.png"
-}
-```
-
-Alterar senha:
-
-```json
-{
-  "senhaAtual": "Senha123!",
-  "novaSenha": "NovaSenha123!",
-  "confirmarNovaSenha": "NovaSenha123!"
-}
-```
-
-Solicitar alteracao de email:
-
-```json
-{
-  "novoEmail": "novo@taskgx.com"
-}
-```
-
-Confirmar alteracao de email:
-
-```json
-{
-  "codigo": "123456"
-}
-```
-
-### Listas
-
-Todas as rotas abaixo sao protegidas.
-
-| Metodo | Rota | Descricao |
-| --- | --- | --- |
-| GET | `/api/Listas` | Lista as listas do usuario autenticado. |
-| POST | `/api/Listas` | Cria uma lista para o usuario autenticado. |
-| PUT | `/api/Listas/{id}` | Atualiza uma lista do usuario autenticado. |
-| DELETE | `/api/Listas/{id}` | Remove uma lista do usuario autenticado. |
-
-Payload para criacao/atualizacao:
-
-```json
-{
-  "nome": "Trabalho",
-  "cor": "#2f80ed",
-  "favorita": true
-}
-```
-
-### Tarefas
-
-Todas as rotas abaixo sao protegidas.
-
-| Metodo | Rota | Descricao |
-| --- | --- | --- |
-| GET | `/api/Tarefas?listaId={listaId}` | Lista tarefas de uma lista do usuario autenticado. |
-| POST | `/api/Tarefas` | Cria uma tarefa em uma lista do usuario autenticado. |
-| PUT | `/api/Tarefas/{id}` | Atualiza uma tarefa do usuario autenticado. |
-| DELETE | `/api/Tarefas/{id}` | Remove uma tarefa do usuario autenticado. |
-| POST | `/api/Tarefas/{id}/concluir` | Marca uma tarefa como concluida. |
-
-Payload de criacao:
-
-```json
-{
-  "listaId": 1,
-  "titulo": "Revisar README",
-  "descricao": "Conferir endpoints da API",
-  "tags": "docs,api",
-  "prioridadeId": 2,
-  "concluida": false,
-  "arquivada": false,
-  "dataVencimento": "2026-06-30T12:00:00Z",
-  "ordem": 1
-}
-```
-
-Payload de atualizacao:
-
-```json
-{
-  "id": 10,
-  "listaId": 1,
-  "titulo": "Revisar README",
-  "descricao": "Conferir endpoints da API",
-  "tags": "docs,api",
-  "prioridadeId": 2,
-  "concluida": true,
-  "arquivada": false,
-  "dataVencimento": "2026-06-30T12:00:00Z",
-  "ordem": 1
-}
-```
-
-### Prioridades
-
-Todas as rotas abaixo sao protegidas.
-
-| Metodo | Rota | Descricao |
-| --- | --- | --- |
-| GET | `/api/Prioridades` | Lista prioridades cadastradas. |
-| POST | `/api/Prioridades` | Endpoint reservado; retorna `403 Forbidden`. |
-| PUT | `/api/Prioridades/{id}` | Endpoint reservado; retorna `403 Forbidden`. |
-| DELETE | `/api/Prioridades/{id}` | Endpoint reservado; retorna `403 Forbidden`. |
-
-## Respostas e erros
-
-- Login retorna `token` e dados basicos do usuario.
-- Criacao de lista/tarefa retorna `201 Created` com o DTO criado.
-- Atualizacoes e exclusoes retornam `204 No Content` quando bem-sucedidas.
-- Erros de validacao usam `ValidationProblemDetails`.
-- Erros de regra/autenticacao usam `ProblemDetails`.
+Arquitetura e integracao com frontend/desktop: `docs/ARCHITECTURE.md`.
