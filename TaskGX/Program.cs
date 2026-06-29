@@ -28,11 +28,16 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services
+var opcoesGoogleAuth = builder.Services
     .AddOptions<ConfiguracoesGoogleAuth>()
-    .Bind(builder.Configuration.GetSection("GoogleAuth"))
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
+    .Bind(builder.Configuration.GetSection("GoogleAuth"));
+
+if (!builder.Environment.IsDevelopment())
+{
+    opcoesGoogleAuth
+        .ValidateDataAnnotations()
+        .ValidateOnStart();
+}
 
 builder.Services
     .AddOptions<ConfiguracoesEmail>()
