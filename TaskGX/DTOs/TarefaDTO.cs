@@ -14,5 +14,6 @@
         public string? ListaNome { get; set; }
         public int? PrioridadeId { get; set; }
         public string? PrioridadeNome { get; set; }
+        public int Ordem { get; set; }
     }
 }

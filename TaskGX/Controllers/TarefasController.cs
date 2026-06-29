@@ -49,7 +49,8 @@ namespace TaskGX.API.Controllers
                     ListaId = tarefa.ListaID,
                     ListaNome = tarefa.Lista != null ? tarefa.Lista.Nome : null,
                     PrioridadeId = tarefa.PrioridadeID,
-                    PrioridadeNome = tarefa.Prioridade != null ? tarefa.Prioridade.Nome : null
+                    PrioridadeNome = tarefa.Prioridade != null ? tarefa.Prioridade.Nome : null,
+                    Ordem = tarefa.Ordem
                 })
                 .ToListAsync();
 
@@ -107,7 +108,8 @@ namespace TaskGX.API.Controllers
                 ListaId = tarefa.ListaID,
                 ListaNome = lista.Nome,
                 PrioridadeId = tarefa.PrioridadeID,
-                PrioridadeNome = prioridadeNome
+                PrioridadeNome = prioridadeNome,
+                Ordem = tarefa.Ordem
             });
         }
 
