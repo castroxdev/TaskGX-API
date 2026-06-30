@@ -48,14 +48,25 @@ namespace TaskGX.API.Services
         {
             ArgumentNullException.ThrowIfNull(usuario);
 
+            if (!TentarObterUsuarioId(usuario, out var id))
+                throw new InvalidOperationException("Token sem ID de usuario (NameIdentifier/sub).");
+
+            return id;
+        }
+
+        public static bool TentarObterUsuarioId(ClaimsPrincipal? usuario, out int id)
+        {
+            id = 0;
+
+            if (usuario?.Identity?.IsAuthenticated != true)
+                return false;
+
             var idTexto =
                 usuario.FindFirstValue(ClaimTypes.NameIdentifier) ??
                 usuario.FindFirstValue(JwtRegisteredClaimNames.Sub);
 
-            if (string.IsNullOrWhiteSpace(idTexto) || !int.TryParse(idTexto, out var id))
-                throw new InvalidOperationException("Token sem ID de usuario (NameIdentifier/sub).");
-
-            return id;
+            return !string.IsNullOrWhiteSpace(idTexto) &&
+                int.TryParse(idTexto, out id);
         }
 
         public static string? ObterEmail(ClaimsPrincipal usuario)

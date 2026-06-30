@@ -66,6 +66,7 @@ builder.Services.AddScoped<AutenticacaoService>();
 builder.Services.AddScoped<CadastroService>();
 builder.Services.AddScoped<VerificacaoService>();
 builder.Services.AddScoped<AlteracaoEmailService>();
+builder.Services.AddScoped<UsuarioService>();
 builder.Services.AddScoped<EnvioEmailService>();
 builder.Services.AddScoped<TokenService>();
 

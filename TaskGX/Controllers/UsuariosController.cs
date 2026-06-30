@@ -16,11 +16,16 @@ namespace TaskGX.API.Controllers
 
         private readonly TaskGXContext _contexto;
         private readonly AlteracaoEmailService _alteracaoEmailService;
+        private readonly UsuarioService _usuarioService;
 
-        public UsuariosController(TaskGXContext contexto, AlteracaoEmailService alteracaoEmailService)
+        public UsuariosController(
+            TaskGXContext contexto,
+            AlteracaoEmailService alteracaoEmailService,
+            UsuarioService usuarioService)
         {
             _contexto = contexto;
             _alteracaoEmailService = alteracaoEmailService;
+            _usuarioService = usuarioService;
         }
 
         [HttpGet("eu")]
@@ -85,6 +90,19 @@ namespace TaskGX.API.Controllers
             usuario.DataAtualizacao = DateTime.UtcNow;
 
             await _contexto.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("eu")]
+        public async Task<IActionResult> EliminarConta()
+        {
+            if (!TokenService.TentarObterUsuarioId(User, out var usuarioId))
+                return Unauthorized();
+
+            var resultado = await _usuarioService.EliminarContaAsync(usuarioId);
+            if (resultado == ResultadoEliminacaoConta.UsuarioNaoEncontrado)
+                return NotFound();
+
             return NoContent();
         }
 

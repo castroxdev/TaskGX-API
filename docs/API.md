@@ -26,6 +26,7 @@ Authorization: Bearer YOUR_JWT_TOKEN
 | POST | `/api/verificacao/reenviar-codigo` | Nao | Reenvia codigo de verificacao. |
 | GET | `/api/Usuarios/eu` | Sim | Obtem o utilizador autenticado. |
 | PUT | `/api/Usuarios/eu` | Sim | Atualiza o perfil autenticado. |
+| DELETE | `/api/Usuarios/eu` | Sim | Elimina a conta do utilizador autenticado. |
 | PATCH | `/api/Usuarios/eu/senha` | Sim | Altera a senha do utilizador autenticado. |
 | POST | `/api/Usuarios/eu/email/solicitar-alteracao` | Sim | Solicita alteracao de email. |
 | POST | `/api/Usuarios/eu/email/confirmar-alteracao` | Sim | Confirma alteracao de email. |
@@ -236,6 +237,21 @@ Request:
 ```
 
 Response `204 No Content`: sem body.
+
+### DELETE `/api/Usuarios/eu`
+
+Elimina a conta do utilizador autenticado e os dados associados.
+
+JWT: sim.
+
+Request: sem body.
+
+Response `204 No Content`: sem body.
+
+Responses esperadas:
+
+- `401 Unauthorized` quando o pedido nao inclui um JWT valido.
+- `404 Not Found` quando o utilizador indicado no token ja nao existe.
 
 ### PATCH `/api/Usuarios/eu/senha`
 
