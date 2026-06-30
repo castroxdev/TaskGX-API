@@ -1,58 +1,90 @@
-# TaskGX API - Endpoints
+# TaskGX API — Documentação dos Endpoints
 
-Esta documentacao usa as rotas reais declaradas nos controllers do projeto.
-Os exemplos usam JSON em camelCase, que e o formato esperado por clientes web
-modernos e e aceite pelo model binding do ASP.NET Core.
+Esta documentação apresenta as rotas declaradas nos controllers da TaskGX API, incluindo os pedidos, respostas e requisitos de autenticação.
 
-Base local comum:
+Os exemplos utilizam JSON em `camelCase`, formato aceite pelo model binding do ASP.NET Core e utilizado pelos clientes do projeto.
 
-- `https://localhost:7284`
-- `http://localhost:5192`
+## Índice
 
-Rotas com JWT exigem:
+* [Endereços locais](#endereços-locais)
+* [Autenticação JWT](#autenticação-jwt)
+* [Resumo dos endpoints](#resumo-dos-endpoints)
+* [Cadastro](#cadastro)
+* [Autenticação](#autenticação)
+* [Verificação de e-mail](#verificação-de-e-mail)
+* [Utilizador autenticado](#utilizador-autenticado)
+* [Listas](#listas)
+* [Tarefas](#tarefas)
+* [Prioridades](#prioridades)
+* [Erros e validação](#erros-e-validação)
+
+## Endereços locais
+
+A API utiliza normalmente os seguintes endereços em ambiente de desenvolvimento:
+
+* HTTPS: `https://localhost:7284`
+* HTTP: `http://localhost:5192`
+
+A documentação interativa do Swagger pode ser acedida através de:
+
+```text
+https://localhost:7284/swagger
+```
+
+As portas podem variar de acordo com a configuração presente em `Properties/launchSettings.json`.
+
+## Autenticação JWT
+
+Os endpoints privados exigem um token JWT no header `Authorization`:
 
 ```http
 Authorization: Bearer YOUR_JWT_TOKEN
 ```
 
-## Resumo
+O token pode ser obtido através do login normal ou do login com Google.
 
-| Metodo | URL | JWT | Descricao |
-| --- | --- | --- | --- |
-| POST | `/api/cadastro` | Nao | Regista um novo utilizador. |
-| POST | `/api/autenticacao/login` | Nao | Autentica com email e senha. |
-| POST | `/api/autenticacao/google-login` | Nao | Autentica com token do Google. |
-| POST | `/api/verificacao/verificar-email` | Nao | Confirma email com codigo de 6 digitos. |
-| POST | `/api/verificacao/reenviar-codigo` | Nao | Reenvia codigo de verificacao. |
-| GET | `/api/Usuarios/eu` | Sim | Obtem o utilizador autenticado. |
-| PUT | `/api/Usuarios/eu` | Sim | Atualiza o perfil autenticado. |
-| DELETE | `/api/Usuarios/eu` | Sim | Elimina a conta do utilizador autenticado. |
-| PATCH | `/api/Usuarios/eu/senha` | Sim | Altera a senha do utilizador autenticado. |
-| POST | `/api/Usuarios/eu/email/solicitar-alteracao` | Sim | Solicita alteracao de email. |
-| POST | `/api/Usuarios/eu/email/confirmar-alteracao` | Sim | Confirma alteracao de email. |
-| GET | `/api/Listas` | Sim | Lista listas do utilizador. |
-| POST | `/api/Listas` | Sim | Cria lista. |
-| PUT | `/api/Listas/{id}` | Sim | Atualiza lista. |
-| DELETE | `/api/Listas/{id}` | Sim | Remove lista. |
-| GET | `/api/Tarefas?listaId={listaId}` | Sim | Lista tarefas de uma lista. |
-| POST | `/api/Tarefas` | Sim | Cria tarefa. |
-| PUT | `/api/Tarefas/{id}` | Sim | Atualiza tarefa. |
-| DELETE | `/api/Tarefas/{id}` | Sim | Remove tarefa. |
-| POST | `/api/Tarefas/{id}/concluir` | Sim | Marca tarefa como concluida. |
-| GET | `/api/Prioridades` | Sim | Lista prioridades. |
-| POST | `/api/Prioridades` | Sim | Reservado; retorna `403 Forbidden`. |
-| PUT | `/api/Prioridades/{id}` | Sim | Reservado; retorna `403 Forbidden`. |
-| DELETE | `/api/Prioridades/{id}` | Sim | Reservado; retorna `403 Forbidden`. |
+Os endpoints que retornam `204 No Content` não possuem body na resposta.
+
+## Resumo dos endpoints
+
+| Método | URL                                          | JWT | Descrição                                               |
+| ------ | -------------------------------------------- | --- | ------------------------------------------------------- |
+| POST   | `/api/cadastro`                              | Não | Regista um novo utilizador.                             |
+| POST   | `/api/autenticacao/login`                    | Não | Autentica com e-mail e palavra-passe.                   |
+| POST   | `/api/autenticacao/google-login`             | Não | Autentica através de um Google ID Token.                |
+| POST   | `/api/verificacao/verificar-email`           | Não | Confirma o e-mail através de um código de seis dígitos. |
+| POST   | `/api/verificacao/reenviar-codigo`           | Não | Reenvia o código de verificação.                        |
+| GET    | `/api/Usuarios/eu`                           | Sim | Obtém o utilizador autenticado.                         |
+| PUT    | `/api/Usuarios/eu`                           | Sim | Atualiza o perfil do utilizador autenticado.            |
+| DELETE | `/api/Usuarios/eu`                           | Sim | Elimina a conta e os dados associados.                  |
+| PATCH  | `/api/Usuarios/eu/senha`                     | Sim | Altera a palavra-passe do utilizador autenticado.       |
+| POST   | `/api/Usuarios/eu/email/solicitar-alteracao` | Sim | Solicita a alteração do endereço de e-mail.             |
+| POST   | `/api/Usuarios/eu/email/confirmar-alteracao` | Sim | Confirma a alteração do endereço de e-mail.             |
+| GET    | `/api/Listas`                                | Sim | Obtém as listas do utilizador.                          |
+| POST   | `/api/Listas`                                | Sim | Cria uma lista.                                         |
+| PUT    | `/api/Listas/{id}`                           | Sim | Atualiza uma lista.                                     |
+| DELETE | `/api/Listas/{id}`                           | Sim | Elimina uma lista.                                      |
+| GET    | `/api/Tarefas?listaId={listaId}`             | Sim | Obtém as tarefas de uma lista.                          |
+| POST   | `/api/Tarefas`                               | Sim | Cria uma tarefa.                                        |
+| PUT    | `/api/Tarefas/{id}`                          | Sim | Atualiza uma tarefa.                                    |
+| DELETE | `/api/Tarefas/{id}`                          | Sim | Elimina uma tarefa.                                     |
+| POST   | `/api/Tarefas/{id}/concluir`                 | Sim | Marca uma tarefa como concluída.                        |
+| GET    | `/api/Prioridades`                           | Sim | Obtém as prioridades disponíveis.                       |
+| POST   | `/api/Prioridades`                           | Sim | Endpoint reservado; retorna `403 Forbidden`.            |
+| PUT    | `/api/Prioridades/{id}`                      | Sim | Endpoint reservado; retorna `403 Forbidden`.            |
+| DELETE | `/api/Prioridades/{id}`                      | Sim | Endpoint reservado; retorna `403 Forbidden`.            |
+
+---
 
 ## Cadastro
 
 ### POST `/api/cadastro`
 
-Regista um utilizador e envia o codigo de verificacao de email.
+Regista um novo utilizador e envia um código de verificação para o endereço de e-mail indicado.
 
-JWT: nao.
+**Autenticação:** não requer JWT.
 
-Request:
+#### Pedido
 
 ```json
 {
@@ -63,7 +95,9 @@ Request:
 }
 ```
 
-Response `200 OK`:
+#### Resposta de sucesso
+
+`200 OK`
 
 ```json
 {
@@ -71,7 +105,9 @@ Response `200 OK`:
 }
 ```
 
-Response de erro comum `400 Bad Request`:
+#### Possível resposta de erro
+
+`400 Bad Request`
 
 ```json
 {
@@ -81,15 +117,17 @@ Response de erro comum `400 Bad Request`:
 }
 ```
 
-## Autenticacao
+---
+
+## Autenticação
 
 ### POST `/api/autenticacao/login`
 
-Autentica um utilizador com email e senha.
+Autentica um utilizador através de e-mail e palavra-passe.
 
-JWT: nao.
+**Autenticação:** não requer JWT.
 
-Request:
+#### Pedido
 
 ```json
 {
@@ -98,7 +136,9 @@ Request:
 }
 ```
 
-Response `200 OK`:
+#### Resposta de sucesso
+
+`200 OK`
 
 ```json
 {
@@ -111,7 +151,11 @@ Response `200 OK`:
 }
 ```
 
-Response de erro comum `401 Unauthorized`:
+O valor de `token` deve ser utilizado nos endpoints protegidos.
+
+#### Possível resposta de erro
+
+`401 Unauthorized`
 
 ```json
 {
@@ -123,11 +167,11 @@ Response de erro comum `401 Unauthorized`:
 
 ### POST `/api/autenticacao/google-login`
 
-Autentica um utilizador com token de identidade do Google.
+Autentica um utilizador através de um Google ID Token obtido pelo frontend.
 
-JWT: nao.
+**Autenticação:** não requer JWT.
 
-Request:
+#### Pedido
 
 ```json
 {
@@ -135,7 +179,9 @@ Request:
 }
 ```
 
-Response `200 OK`:
+#### Resposta de sucesso
+
+`200 OK`
 
 ```json
 {
@@ -149,15 +195,19 @@ Response `200 OK`:
 }
 ```
 
-## Verificacao de email
+O token retornado pela TaskGX API deve ser utilizado nos restantes endpoints. O Google ID Token não substitui o JWT da aplicação.
+
+---
+
+## Verificação de e-mail
 
 ### POST `/api/verificacao/verificar-email`
 
-Confirma o email com um codigo de 6 digitos.
+Confirma o endereço de e-mail através de um código de seis dígitos.
 
-JWT: nao.
+**Autenticação:** não requer JWT.
 
-Request:
+#### Pedido
 
 ```json
 {
@@ -166,7 +216,9 @@ Request:
 }
 ```
 
-Response `200 OK`:
+#### Resposta de sucesso
+
+`200 OK`
 
 ```json
 {
@@ -176,11 +228,11 @@ Response `200 OK`:
 
 ### POST `/api/verificacao/reenviar-codigo`
 
-Reenvia o codigo de verificacao para o email indicado.
+Reenvia o código de verificação para o endereço de e-mail indicado.
 
-JWT: nao.
+**Autenticação:** não requer JWT.
 
-Request:
+#### Pedido
 
 ```json
 {
@@ -188,7 +240,9 @@ Request:
 }
 ```
 
-Response `200 OK`:
+#### Resposta de sucesso
+
+`200 OK`
 
 ```json
 {
@@ -196,17 +250,23 @@ Response `200 OK`:
 }
 ```
 
+---
+
 ## Utilizador autenticado
 
 ### GET `/api/Usuarios/eu`
 
-Obtem o perfil do utilizador autenticado.
+Obtém os dados do utilizador autenticado.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request: sem body.
+#### Pedido
 
-Response `200 OK`:
+Sem body.
+
+#### Resposta de sucesso
+
+`200 OK`
 
 ```json
 {
@@ -223,11 +283,11 @@ Response `200 OK`:
 
 ### PUT `/api/Usuarios/eu`
 
-Atualiza nome e avatar do utilizador autenticado.
+Atualiza o nome e o avatar do utilizador autenticado.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request:
+#### Pedido
 
 ```json
 {
@@ -236,30 +296,47 @@ Request:
 }
 ```
 
-Response `204 No Content`: sem body.
+#### Resposta de sucesso
+
+`204 No Content`
+
+A resposta não possui body.
 
 ### DELETE `/api/Usuarios/eu`
 
-Elimina a conta do utilizador autenticado e os dados associados.
+Elimina permanentemente a conta do utilizador autenticado e os dados associados.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request: sem body.
+#### Pedido
 
-Response `204 No Content`: sem body.
+Sem body.
 
-Responses esperadas:
+O endpoint não recebe um ID de utilizador. A conta é identificada exclusivamente através do JWT.
 
-- `401 Unauthorized` quando o pedido nao inclui um JWT valido.
-- `404 Not Found` quando o utilizador indicado no token ja nao existe.
+#### Resposta de sucesso
+
+`204 No Content`
+
+A resposta não possui body.
+
+#### Respostas esperadas
+
+| Código             | Descrição                                      |
+| ------------------ | ---------------------------------------------- |
+| `204 No Content`   | Conta eliminada com sucesso.                   |
+| `401 Unauthorized` | JWT ausente, inválido ou expirado.             |
+| `404 Not Found`    | O utilizador associado ao token já não existe. |
+
+Depois de uma eliminação bem-sucedida, o cliente deve remover o JWT e encerrar a sessão local.
 
 ### PATCH `/api/Usuarios/eu/senha`
 
-Altera a senha do utilizador autenticado.
+Altera a palavra-passe do utilizador autenticado.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request:
+#### Pedido
 
 ```json
 {
@@ -269,15 +346,19 @@ Request:
 }
 ```
 
-Response `204 No Content`: sem body.
+#### Resposta de sucesso
+
+`204 No Content`
+
+A resposta não possui body.
 
 ### POST `/api/Usuarios/eu/email/solicitar-alteracao`
 
-Solicita alteracao de email e envia codigo de confirmacao.
+Solicita a alteração do endereço de e-mail e envia um código de confirmação para o novo endereço.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request:
+#### Pedido
 
 ```json
 {
@@ -285,7 +366,9 @@ Request:
 }
 ```
 
-Response `200 OK`:
+#### Resposta de sucesso
+
+`200 OK`
 
 ```json
 {
@@ -295,11 +378,11 @@ Response `200 OK`:
 
 ### POST `/api/Usuarios/eu/email/confirmar-alteracao`
 
-Confirma a alteracao de email com codigo de 6 digitos.
+Confirma a alteração do endereço de e-mail através de um código de seis dígitos.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request:
+#### Pedido
 
 ```json
 {
@@ -307,7 +390,9 @@ Request:
 }
 ```
 
-Response `200 OK`:
+#### Resposta de sucesso
+
+`200 OK`
 
 ```json
 {
@@ -315,17 +400,23 @@ Response `200 OK`:
 }
 ```
 
+---
+
 ## Listas
 
 ### GET `/api/Listas`
 
-Lista as listas do utilizador autenticado.
+Obtém as listas pertencentes ao utilizador autenticado.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request: sem body.
+#### Pedido
 
-Response `200 OK`:
+Sem body.
+
+#### Resposta de sucesso
+
+`200 OK`
 
 ```json
 [
@@ -340,11 +431,11 @@ Response `200 OK`:
 
 ### POST `/api/Listas`
 
-Cria uma lista para o utilizador autenticado.
+Cria uma nova lista para o utilizador autenticado.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request:
+#### Pedido
 
 ```json
 {
@@ -354,7 +445,9 @@ Request:
 }
 ```
 
-Response `201 Created`:
+#### Resposta de sucesso
+
+`201 Created`
 
 ```json
 {
@@ -367,11 +460,17 @@ Response `201 Created`:
 
 ### PUT `/api/Listas/{id}`
 
-Atualiza uma lista do utilizador autenticado.
+Atualiza uma lista pertencente ao utilizador autenticado.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request:
+#### Parâmetro de rota
+
+| Parâmetro | Tipo    | Descrição               |
+| --------- | ------- | ----------------------- |
+| `id`      | inteiro | Identificador da lista. |
+
+#### Pedido
 
 ```json
 {
@@ -381,29 +480,57 @@ Request:
 }
 ```
 
-Response `204 No Content`: sem body.
+#### Resposta de sucesso
+
+`204 No Content`
+
+A resposta não possui body.
 
 ### DELETE `/api/Listas/{id}`
 
-Remove uma lista do utilizador autenticado.
+Elimina uma lista pertencente ao utilizador autenticado.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request: sem body.
+#### Parâmetro de rota
 
-Response `204 No Content`: sem body.
+| Parâmetro | Tipo    | Descrição               |
+| --------- | ------- | ----------------------- |
+| `id`      | inteiro | Identificador da lista. |
+
+#### Pedido
+
+Sem body.
+
+#### Resposta de sucesso
+
+`204 No Content`
+
+A resposta não possui body.
+
+---
 
 ## Tarefas
 
 ### GET `/api/Tarefas?listaId={listaId}`
 
-Lista tarefas de uma lista pertencente ao utilizador autenticado.
+Obtém as tarefas de uma lista pertencente ao utilizador autenticado.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request: sem body.
+#### Parâmetro de query
 
-Response `200 OK`:
+| Parâmetro | Tipo    | Descrição                                           |
+| --------- | ------- | --------------------------------------------------- |
+| `listaId` | inteiro | Identificador da lista cujas tarefas serão obtidas. |
+
+#### Pedido
+
+Sem body.
+
+#### Resposta de sucesso
+
+`200 OK`
 
 ```json
 [
@@ -426,11 +553,11 @@ Response `200 OK`:
 
 ### POST `/api/Tarefas`
 
-Cria uma tarefa numa lista do utilizador autenticado.
+Cria uma tarefa numa lista pertencente ao utilizador autenticado.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request:
+#### Pedido
 
 ```json
 {
@@ -446,7 +573,9 @@ Request:
 }
 ```
 
-Response `201 Created`:
+#### Resposta de sucesso
+
+`201 Created`
 
 ```json
 {
@@ -467,12 +596,19 @@ Response `201 Created`:
 
 ### PUT `/api/Tarefas/{id}`
 
-Atualiza uma tarefa do utilizador autenticado. O `id` da rota deve ser igual ao
-`id` enviado no body.
+Atualiza uma tarefa pertencente ao utilizador autenticado.
 
-JWT: sim.
+O `id` indicado na rota deve ser igual ao `id` enviado no body.
 
-Request:
+**Autenticação:** requer JWT.
+
+#### Parâmetro de rota
+
+| Parâmetro | Tipo    | Descrição                |
+| --------- | ------- | ------------------------ |
+| `id`      | inteiro | Identificador da tarefa. |
+
+#### Pedido
 
 ```json
 {
@@ -489,39 +625,73 @@ Request:
 }
 ```
 
-Response `204 No Content`: sem body.
+#### Resposta de sucesso
+
+`204 No Content`
+
+A resposta não possui body.
 
 ### DELETE `/api/Tarefas/{id}`
 
-Remove uma tarefa do utilizador autenticado.
+Elimina uma tarefa pertencente ao utilizador autenticado.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request: sem body.
+#### Parâmetro de rota
 
-Response `204 No Content`: sem body.
+| Parâmetro | Tipo    | Descrição                |
+| --------- | ------- | ------------------------ |
+| `id`      | inteiro | Identificador da tarefa. |
+
+#### Pedido
+
+Sem body.
+
+#### Resposta de sucesso
+
+`204 No Content`
+
+A resposta não possui body.
 
 ### POST `/api/Tarefas/{id}/concluir`
 
-Marca uma tarefa como concluida.
+Marca uma tarefa como concluída.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request: sem body.
+#### Parâmetro de rota
 
-Response `204 No Content`: sem body.
+| Parâmetro | Tipo    | Descrição                |
+| --------- | ------- | ------------------------ |
+| `id`      | inteiro | Identificador da tarefa. |
+
+#### Pedido
+
+Sem body.
+
+#### Resposta de sucesso
+
+`204 No Content`
+
+A resposta não possui body.
+
+---
 
 ## Prioridades
 
 ### GET `/api/Prioridades`
 
-Lista as prioridades disponiveis.
+Obtém as prioridades disponíveis para utilização nas tarefas.
 
-JWT: sim.
+**Autenticação:** requer JWT.
 
-Request: sem body.
+#### Pedido
 
-Response `200 OK`:
+Sem body.
+
+#### Resposta de sucesso
+
+`200 OK`
 
 ```json
 [
@@ -542,37 +712,59 @@ Response `200 OK`:
 
 ### POST `/api/Prioridades`
 
-Endpoint reservado. A criacao de prioridades nao esta disponivel pela API.
+Endpoint reservado.
 
-JWT: sim.
+A criação de prioridades não está disponível através da API.
 
-Request: sem body.
+**Autenticação:** requer JWT.
 
-Response: `403 Forbidden`.
+#### Pedido
+
+Sem body.
+
+#### Resposta
+
+`403 Forbidden`
 
 ### PUT `/api/Prioridades/{id}`
 
-Endpoint reservado. A atualizacao de prioridades nao esta disponivel pela API.
+Endpoint reservado.
 
-JWT: sim.
+A atualização de prioridades não está disponível através da API.
 
-Request: sem body.
+**Autenticação:** requer JWT.
 
-Response: `403 Forbidden`.
+#### Pedido
+
+Sem body.
+
+#### Resposta
+
+`403 Forbidden`
 
 ### DELETE `/api/Prioridades/{id}`
 
-Endpoint reservado. A remocao de prioridades nao esta disponivel pela API.
+Endpoint reservado.
 
-JWT: sim.
+A eliminação de prioridades não está disponível através da API.
 
-Request: sem body.
+**Autenticação:** requer JWT.
 
-Response: `403 Forbidden`.
+#### Pedido
 
-## Erros e validacao
+Sem body.
 
-Erros de validacao usam `ValidationProblemDetails`.
+#### Resposta
+
+`403 Forbidden`
+
+---
+
+## Erros e validação
+
+### ValidationProblemDetails
+
+Erros de validação utilizam o formato `ValidationProblemDetails`.
 
 Exemplo:
 
@@ -589,4 +781,39 @@ Exemplo:
 }
 ```
 
-Erros de autenticacao ou regras de negocio usam `ProblemDetails`.
+A propriedade `errors` apresenta os campos inválidos e as respetivas mensagens de validação.
+
+### ProblemDetails
+
+Erros de autenticação, recursos inexistentes e regras de negócio utilizam o formato `ProblemDetails`.
+
+Exemplo:
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+  "title": "Nao foi possivel concluir o pedido.",
+  "status": 400,
+  "detail": "Descricao do erro."
+}
+```
+
+### Códigos HTTP utilizados
+
+| Código                      | Significado                                |
+| --------------------------- | ------------------------------------------ |
+| `200 OK`                    | Pedido concluído com sucesso.              |
+| `201 Created`               | Recurso criado com sucesso.                |
+| `204 No Content`            | Pedido concluído sem conteúdo na resposta. |
+| `400 Bad Request`           | Pedido ou dados inválidos.                 |
+| `401 Unauthorized`          | JWT ausente, inválido ou expirado.         |
+| `403 Forbidden`             | Operação não permitida.                    |
+| `404 Not Found`             | Recurso não encontrado.                    |
+| `409 Conflict`              | Conflito com um recurso existente.         |
+| `500 Internal Server Error` | Erro interno inesperado.                   |
+
+Nem todos os endpoints utilizam todos os códigos apresentados. Consulte o Swagger para verificar as respostas documentadas de cada operação.
+
+---
+
+[Voltar ao README principal](../README.md) | [Consultar a arquitetura](ARCHITECTURE.md)
