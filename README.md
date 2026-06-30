@@ -1,88 +1,108 @@
 # TaskGX API
 
-TaskGX API e a API REST central do projeto TaskGX. Ela fornece os recursos
-necessarios para autenticar utilizadores, criar contas, verificar email e gerir
-listas, tarefas e prioridades. A API foi preparada para ser consumida por uma
-aplicacao web em React e tambem por uma aplicacao desktop que reutilize os
-mesmos dados e regras de autenticacao.
+A **TaskGX API** é a API REST central do projeto TaskGX. Ela fornece os recursos necessários para autenticar utilizadores, criar contas, verificar endereços de e-mail e gerir listas, tarefas e prioridades.
+
+A API foi preparada para ser consumida pela aplicação web desenvolvida em React e por futuras aplicações desktop ou mobile que reutilizem os mesmos dados e regras de autenticação.
 
 ## Tecnologias
 
-- ASP.NET Core Web API com .NET 10
-- JWT Authentication para proteger endpoints privados
-- Entity Framework Core
-- PostgreSQL/Supabase com provider Npgsql
-- Swagger/OpenAPI em ambiente de desenvolvimento
+* ASP.NET Core Web API com .NET 10
+* Entity Framework Core
+* PostgreSQL/Supabase
+* Provider Npgsql para Entity Framework Core
+* Autenticação através de JWT
+* Autenticação com Google
+* Swagger/OpenAPI em ambiente de desenvolvimento
+* Envio de e-mails através de SMTP
 
 ## Funcionalidades principais
 
-- Autenticacao com email e senha por JWT
-- Registo/cadastro de utilizadores
-- Verificacao de email por codigo
-- Reenvio de codigo de verificacao
-- Consulta e atualizacao do utilizador autenticado
-- Alteracao de senha e solicitacao/confirmacao de alteracao de email
-- Gestao de listas do utilizador
-- Gestao de tarefas por lista
-- Consulta de prioridades
-- Documentacao interativa com Swagger
+* Registo de utilizadores
+* Autenticação com e-mail e palavra-passe através de JWT
+* Autenticação com conta Google
+* Verificação de e-mail através de código
+* Reenvio do código de verificação
+* Consulta e atualização do utilizador autenticado
+* Alteração da palavra-passe
+* Solicitação e confirmação da alteração de e-mail
+* Eliminação da conta e dos dados associados
+* Gestão das listas do utilizador
+* Gestão de tarefas por lista
+* Conclusão de tarefas
+* Consulta de prioridades
+* Documentação interativa através do Swagger
 
-## Configuracao segura
+## Configuração segura
 
-Credenciais sensiveis nao devem ficar no `appsettings.json` versionado. Use
-User Secrets em desenvolvimento local ou variaveis de ambiente em ambientes de
-execucao.
+Credenciais e valores sensíveis não devem ser armazenados diretamente no ficheiro `appsettings.json` versionado.
 
-O projeto contem um ficheiro de referencia em
-`TaskGX/appsettings.example.json`, apenas com placeholders. Copie a estrutura
-necessaria para o seu ambiente local e configure valores reais fora do
-repositorio.
+Em desenvolvimento, devem ser utilizados:
 
-Valores principais:
+* .NET User Secrets;
+* variáveis de ambiente;
+* ficheiros locais não incluídos no repositório.
 
-- `ConnectionStrings:DefaultConnection` ou variavel `SUPABASE_DB_CONNECTION`
-- `Jwt:Chave`
-- `Jwt:Emissor`
-- `Jwt:Audiencia`
-- `Jwt:MinutosExpiracao`
-- `GoogleAuth:ClientId`
-- `ConfiguracoesEmail:Host`
-- `ConfiguracoesEmail:Porta`
-- `ConfiguracoesEmail:NomeUsuario`
-- `ConfiguracoesEmail:Senha`
-- `ConfiguracoesEmail:EmailRemetente`
-- `ConfiguracoesEmail:NomeRemetente`
-- `ConfiguracoesEmail:HabilitarSsl`
-- `Cors:AllowedOrigins`
+O projeto contém um ficheiro de referência em:
 
-Exemplo com User Secrets:
+```text
+TaskGX/appsettings.example.json
+```
+
+Esse ficheiro contém apenas placeholders. Os valores reais devem ser configurados fora do repositório.
+
+### Valores principais
+
+* `ConnectionStrings:DefaultConnection`
+* `SUPABASE_DB_CONNECTION`
+* `Jwt:Chave`
+* `Jwt:Emissor`
+* `Jwt:Audiencia`
+* `Jwt:MinutosExpiracao`
+* `GoogleAuth:ClientId`
+* `ConfiguracoesEmail:Host`
+* `ConfiguracoesEmail:Porta`
+* `ConfiguracoesEmail:NomeUsuario`
+* `ConfiguracoesEmail:Senha`
+* `ConfiguracoesEmail:EmailRemetente`
+* `ConfiguracoesEmail:NomeRemetente`
+* `ConfiguracoesEmail:HabilitarSsl`
+* `Cors:AllowedOrigins`
+
+### Exemplo com User Secrets
 
 ```powershell
 cd TaskGX
+
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_DATABASE_CONNECTION_STRING"
 dotnet user-secrets set "Jwt:Chave" "YOUR_JWT_SECRET_KEY"
+dotnet user-secrets set "GoogleAuth:ClientId" "YOUR_GOOGLE_CLIENT_ID"
 dotnet user-secrets set "ConfiguracoesEmail:NomeUsuario" "YOUR_EMAIL"
 dotnet user-secrets set "ConfiguracoesEmail:Senha" "YOUR_EMAIL_APP_PASSWORD"
 ```
 
-Para variaveis de ambiente, pode usar o formato hierarquico do ASP.NET Core:
+### Exemplo com variáveis de ambiente
+
+No PowerShell:
 
 ```powershell
 $env:SUPABASE_DB_CONNECTION="YOUR_DATABASE_CONNECTION_STRING"
 $env:Jwt__Chave="YOUR_JWT_SECRET_KEY"
+$env:GoogleAuth__ClientId="YOUR_GOOGLE_CLIENT_ID"
 $env:ConfiguracoesEmail__NomeUsuario="YOUR_EMAIL"
 $env:ConfiguracoesEmail__Senha="YOUR_EMAIL_APP_PASSWORD"
 ```
 
-## Correr localmente
+O ASP.NET Core utiliza dois caracteres de underscore, `__`, para representar níveis hierárquicos nas variáveis de ambiente.
 
-Requisitos:
+## Executar localmente
 
-- .NET SDK compativel com `net10.0`
-- Base de dados PostgreSQL/Supabase configurada
-- User Secrets ou variaveis de ambiente com as credenciais necessarias
+### Requisitos
 
-Comandos:
+* .NET SDK compatível com `net10.0`
+* Base de dados PostgreSQL ou Supabase configurada
+* User Secrets ou variáveis de ambiente com as credenciais necessárias
+
+### Comandos
 
 ```powershell
 cd TaskGX
@@ -91,72 +111,111 @@ dotnet build
 dotnet run
 ```
 
-Perfis locais configurados:
+## Endereços locais
 
-- HTTP: `http://localhost:5192`
-- HTTPS: `https://localhost:7284`
+Os perfis locais estão configurados nos seguintes endereços:
 
-Em desenvolvimento, o Swagger fica disponivel em:
+* HTTP: `http://localhost:5192`
+* HTTPS: `https://localhost:7284`
 
-- `https://localhost:7284/swagger`
-- `https://localhost:7284/swagger/v1/swagger-corrigido.json`
+As portas podem ser consultadas ou alteradas no ficheiro:
+
+```text
+Properties/launchSettings.json
+```
+
+Em ambiente de desenvolvimento, o Swagger fica disponível em:
+
+* `https://localhost:7284/swagger`
+* `https://localhost:7284/swagger/v1/swagger-corrigido.json`
 
 O frontend React em desenvolvimento pode consumir a API a partir de:
 
-- `http://localhost:5173`
+```text
+http://localhost:5173
+```
+
+Esse endereço deve estar incluído nas origens permitidas pela configuração de CORS.
 
 ## Base de dados
 
-Os scripts para PostgreSQL/Supabase ficam em `TaskGX/database/supabase`:
+Os scripts utilizados para configurar a base de dados PostgreSQL/Supabase encontram-se em:
 
-- `schema.sql`
-- `seed_prioridades.sql`
-- `sync_sequences.sql`
+```text
+TaskGX/database/supabase
+```
 
-Para uma base nova, execute primeiro o `schema.sql` e depois o
-`seed_prioridades.sql`.
+Ficheiros disponíveis:
 
-## Autenticacao
+* `schema.sql`
+* `seed_prioridades.sql`
+* `sync_sequences.sql`
 
-As rotas privadas exigem o header:
+Para configurar uma base de dados nova:
+
+1. Execute `schema.sql`.
+2. Execute `seed_prioridades.sql`.
+3. Execute `sync_sequences.sql` caso seja necessário sincronizar as sequências de IDs.
+
+## Autenticação
+
+As rotas privadas exigem um token JWT enviado no header:
 
 ```http
 Authorization: Bearer YOUR_JWT_TOKEN
 ```
 
-Fluxo recomendado:
+### Fluxo com e-mail e palavra-passe
 
-1. Criar conta em `POST /api/cadastro`.
-2. Confirmar o email em `POST /api/verificacao/verificar-email`.
-3. Fazer login em `POST /api/autenticacao/login`.
-4. Usar o `token` retornado nas rotas protegidas.
+1. Criar uma conta através de `POST /api/cadastro`.
+2. Confirmar o e-mail através de `POST /api/verificacao/verificar-email`.
+3. Fazer login através de `POST /api/autenticacao/login`.
+4. Utilizar o token retornado nas rotas protegidas.
+
+### Fluxo com Google
+
+1. Obter um Google ID Token no frontend.
+2. Enviar o token para `POST /api/autenticacao/google-login`.
+3. Receber o token JWT do TaskGX.
+4. Utilizar o token JWT do TaskGX nas rotas protegidas.
 
 ## Endpoints principais
 
-| Metodo | URL | JWT | Descricao |
-| --- | --- | --- | --- |
-| GET | `/` | Nao | Estado basico da API. |
-| POST | `/api/cadastro` | Nao | Regista um novo utilizador. |
-| POST | `/api/autenticacao/login` | Nao | Autentica com email e senha. |
-| POST | `/api/autenticacao/google-login` | Nao | Autentica com token do Google. |
-| POST | `/api/verificacao/verificar-email` | Nao | Verifica o email com codigo de 6 digitos. |
-| POST | `/api/verificacao/reenviar-codigo` | Nao | Reenvia o codigo de verificacao. |
-| GET | `/api/Usuarios/eu` | Sim | Obtem o utilizador autenticado. |
-| PUT | `/api/Usuarios/eu` | Sim | Atualiza o perfil do utilizador autenticado. |
-| PATCH | `/api/Usuarios/eu/senha` | Sim | Altera a senha do utilizador autenticado. |
-| POST | `/api/Usuarios/eu/email/solicitar-alteracao` | Sim | Solicita alteracao de email. |
-| POST | `/api/Usuarios/eu/email/confirmar-alteracao` | Sim | Confirma alteracao de email. |
-| GET | `/api/Listas` | Sim | Lista as listas do utilizador. |
-| POST | `/api/Listas` | Sim | Cria uma lista. |
-| PUT | `/api/Listas/{id}` | Sim | Atualiza uma lista. |
-| DELETE | `/api/Listas/{id}` | Sim | Remove uma lista. |
-| GET | `/api/Tarefas?listaId={listaId}` | Sim | Lista tarefas de uma lista. |
-| POST | `/api/Tarefas` | Sim | Cria uma tarefa. |
-| PUT | `/api/Tarefas/{id}` | Sim | Atualiza uma tarefa. |
-| DELETE | `/api/Tarefas/{id}` | Sim | Remove uma tarefa. |
-| POST | `/api/Tarefas/{id}/concluir` | Sim | Marca uma tarefa como concluida. |
-| GET | `/api/Prioridades` | Sim | Lista as prioridades disponiveis. |
+| Método | URL                                          | JWT | Descrição                                                        |
+| ------ | -------------------------------------------- | --- | ---------------------------------------------------------------- |
+| GET    | `/`                                          | Não | Retorna o estado básico da API.                                  |
+| POST   | `/api/cadastro`                              | Não | Regista um novo utilizador.                                      |
+| POST   | `/api/autenticacao/login`                    | Não | Autentica com e-mail e palavra-passe.                            |
+| POST   | `/api/autenticacao/google-login`             | Não | Autentica através de um Google ID Token.                         |
+| POST   | `/api/verificacao/verificar-email`           | Não | Verifica o e-mail através de um código de seis dígitos.          |
+| POST   | `/api/verificacao/reenviar-codigo`           | Não | Reenvia o código de verificação.                                 |
+| GET    | `/api/Usuarios/eu`                           | Sim | Obtém o utilizador autenticado.                                  |
+| PUT    | `/api/Usuarios/eu`                           | Sim | Atualiza o perfil do utilizador autenticado.                     |
+| DELETE | `/api/Usuarios/eu`                           | Sim | Elimina a conta e os dados associados ao utilizador autenticado. |
+| PATCH  | `/api/Usuarios/eu/senha`                     | Sim | Altera a palavra-passe do utilizador autenticado.                |
+| POST   | `/api/Usuarios/eu/email/solicitar-alteracao` | Sim | Solicita a alteração do endereço de e-mail.                      |
+| POST   | `/api/Usuarios/eu/email/confirmar-alteracao` | Sim | Confirma a alteração do endereço de e-mail.                      |
+| GET    | `/api/Listas`                                | Sim | Obtém as listas do utilizador autenticado.                       |
+| POST   | `/api/Listas`                                | Sim | Cria uma nova lista.                                             |
+| PUT    | `/api/Listas/{id}`                           | Sim | Atualiza uma lista pertencente ao utilizador.                    |
+| DELETE | `/api/Listas/{id}`                           | Sim | Elimina uma lista pertencente ao utilizador.                     |
+| GET    | `/api/Tarefas?listaId={listaId}`             | Sim | Obtém as tarefas de uma lista.                                   |
+| POST   | `/api/Tarefas`                               | Sim | Cria uma nova tarefa.                                            |
+| PUT    | `/api/Tarefas/{id}`                          | Sim | Atualiza uma tarefa pertencente ao utilizador.                   |
+| DELETE | `/api/Tarefas/{id}`                          | Sim | Elimina uma tarefa pertencente ao utilizador.                    |
+| POST   | `/api/Tarefas/{id}/concluir`                 | Sim | Marca uma tarefa como concluída.                                 |
+| GET    | `/api/Prioridades`                           | Sim | Obtém as prioridades disponíveis.                                |
 
-Documentacao mais detalhada dos endpoints: `docs/API.md`.
+## Documentação adicional
 
-Arquitetura e integracao com frontend/desktop: `docs/ARCHITECTURE.md`.
+A documentação detalhada dos endpoints encontra-se em:
+
+```text
+docs/API.md
+```
+
+A documentação sobre a arquitetura e integração com frontend e aplicações desktop encontra-se em:
+
+```text
+docs/ARCHITECTURE.md
+```
