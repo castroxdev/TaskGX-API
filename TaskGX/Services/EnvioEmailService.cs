@@ -111,5 +111,24 @@ namespace TaskGX.API.Services
 
             return EnviarAsync(emailDestino, assunto, corpo, ct);
         }
+
+        public Task EnviarCodigoRecuperacaoSenhaAsync(
+            string emailDestino,
+            string codigo,
+            DateTime expiresAt,
+            CancellationToken ct = default)
+        {
+            var assunto = "Recuperacao de senha - TaskGX";
+            var corpo = $@"
+                <div style='font-family: Arial, sans-serif; line-height:1.5'>
+                    <h2>TaskGX</h2>
+                    <p>Use o codigo abaixo para recuperar a sua senha:</p>
+                    <p style='font-size: 22px; letter-spacing: 2px;'><b>{WebUtility.HtmlEncode(codigo)}</b></p>
+                    <p>O codigo expira em: <b>{expiresAt:dd/MM/yyyy HH:mm}</b></p>
+                    <p>Se voce nao solicitou a recuperacao, ignore este email.</p>
+                </div>";
+
+            return EnviarAsync(emailDestino, assunto, corpo, ct);
+        }
     }
 }

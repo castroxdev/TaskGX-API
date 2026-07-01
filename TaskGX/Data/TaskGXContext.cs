@@ -14,6 +14,7 @@ namespace TaskGX.Data
         public DbSet<Lista> Listas { get; set; } = null!;
         public DbSet<Tarefa> Tarefas { get; set; } = null!;
         public DbSet<Prioridade> Prioridades { get; set; } = null!;
+        public DbSet<RecuperacaoSenha> RecuperacoesSenha { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +39,23 @@ namespace TaskGX.Data
                 entity.Property(e => e.DataAtualizacao).HasColumnName("DataAtualizacao");
 
                 entity.HasIndex(e => e.Email).IsUnique();
+            });
+
+            modelBuilder.Entity<RecuperacaoSenha>(entity =>
+            {
+                entity.ToTable("RecuperacoesSenha");
+                entity.HasKey(e => e.UsuarioID);
+
+                entity.Property(e => e.UsuarioID).HasColumnName("UsuarioID");
+                entity.Property(e => e.CodigoHash).HasColumnName("CodigoHash").HasMaxLength(64);
+                entity.Property(e => e.Expiracao).HasColumnName("Expiracao");
+                entity.Property(e => e.TentativasInvalidas).HasColumnName("TentativasInvalidas");
+                entity.Property(e => e.CriadoEm).HasColumnName("CriadoEm");
+
+                entity.HasOne<Usuario>()
+                    .WithOne()
+                    .HasForeignKey<RecuperacaoSenha>(e => e.UsuarioID)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<Prioridade>(entity =>

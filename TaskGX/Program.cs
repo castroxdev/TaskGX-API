@@ -62,9 +62,11 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 
 builder.Services.AddScoped<UsuarioRepository>();
+builder.Services.AddScoped<RecuperacaoSenhaRepository>();
 builder.Services.AddScoped<AutenticacaoService>();
 builder.Services.AddScoped<CadastroService>();
 builder.Services.AddScoped<VerificacaoService>();
+builder.Services.AddScoped<RecuperacaoSenhaService>();
 builder.Services.AddScoped<AlteracaoEmailService>();
 builder.Services.AddScoped<UsuarioService>();
 builder.Services.AddScoped<EnvioEmailService>();
