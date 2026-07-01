@@ -35,18 +35,27 @@ namespace TaskGX.API.Services
             return (true, "Email verificado com sucesso.");
         }
 
-        public async Task<(bool Sucesso, string Mensagem)> ReenviarCodigoAsync(string email)
+        public async Task<(bool Sucesso, string Mensagem, int StatusCode)> ReenviarCodigoAsync(string email)
         {
             email = (email ?? string.Empty).Trim().ToLowerInvariant();
 
             var usuario = await _usuarioRepository.ObterPorEmailAsync(email);
             if (usuario == null)
-                return (false, "Email nao encontrado.");
+                return (false, "Email nao encontrado.", StatusCodes.Status404NotFound);
+
+            if (usuario.EmailVerificado)
+                return (false, "O email informado ja esta verificado.", StatusCodes.Status409Conflict);
 
             var codigo = CadastroService.GerarCodigoVerificacao();
             var expiracao = DateTime.UtcNow.AddHours(24);
 
-            await _usuarioRepository.AtualizarVerificacaoEmailAsync(usuario.ID, false, false, codigo, expiracao);
+            var codigoAtualizado = await _usuarioRepository.AtualizarCodigoVerificacaoAsync(
+                usuario.ID,
+                codigo,
+                expiracao);
+
+            if (!codigoAtualizado)
+                return (false, "O email informado ja esta verificado.", StatusCodes.Status409Conflict);
 
             try
             {
@@ -54,10 +63,10 @@ namespace TaskGX.API.Services
             }
             catch
             {
-                return (false, "Nao foi possivel reenviar o codigo no momento.");
+                return (false, "Nao foi possivel reenviar o codigo no momento.", StatusCodes.Status400BadRequest);
             }
 
-            return (true, "Novo codigo enviado com sucesso.");
+            return (true, "Novo codigo enviado com sucesso.", StatusCodes.Status200OK);
         }
     }
 }

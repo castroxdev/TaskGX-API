@@ -33,17 +33,23 @@ namespace TaskGX.API.Controllers
         }
 
         [HttpPost("reenviar-codigo")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> ReenviarCodigo([FromBody] ReenviarCodigoDTO dtoReenvio)
         {
             var resultado = await _verificacaoService.ReenviarCodigoAsync(dtoReenvio.Email);
             if (!resultado.Sucesso)
             {
-                return BadRequest(new ProblemDetails
+                var problema = new ProblemDetails
                 {
                     Title = "Falha ao reenviar o codigo.",
                     Detail = resultado.Mensagem,
-                    Status = StatusCodes.Status400BadRequest
-                });
+                    Status = resultado.StatusCode
+                };
+
+                return StatusCode(resultado.StatusCode, problema);
             }
 
             return Ok(new { mensagem = resultado.Mensagem });

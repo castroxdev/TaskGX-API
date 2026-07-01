@@ -132,6 +132,22 @@ namespace TaskGX.API.Repositories
             await _contexto.SaveChangesAsync();
         }
 
+        public async Task<bool> AtualizarCodigoVerificacaoAsync(
+            int usuarioId,
+            string codigoVerificacao,
+            DateTime expiracao)
+        {
+            var quantidadeAtualizada = await _contexto.Usuarios
+                .Where(usuario => usuario.ID == usuarioId && !usuario.EmailVerificado)
+                .ExecuteUpdateAsync(atualizacao => atualizacao
+                    .SetProperty(usuario => usuario.CodigoVerificacao, codigoVerificacao)
+                    .SetProperty(usuario => usuario.CodigoVerificacaoExpiracao, expiracao)
+                    .SetProperty(usuario => usuario.Ativo, false)
+                    .SetProperty(usuario => usuario.DataAtualizacao, DateTime.UtcNow));
+
+            return quantidadeAtualizada == 1;
+        }
+
         public async Task AtualizarSolicitacaoAlteracaoEmailAsync(
             int usuarioId,
             string novoEmail,
