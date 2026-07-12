@@ -30,8 +30,6 @@ namespace TaskGX.API.Services
             var codigo = CadastroService.GerarCodigoVerificacao();
             var expiracao = DateTime.UtcNow.AddHours(24);
 
-            await _usuarioRepository.AtualizarSolicitacaoAlteracaoEmailAsync(usuario.ID, novoEmail, codigo, expiracao);
-
             try
             {
                 await _envioEmailService.EnviarCodigoAlteracaoEmailAsync(novoEmail, codigo, expiresAt: expiracao);
@@ -40,6 +38,12 @@ namespace TaskGX.API.Services
             {
                 return (false, "Nao foi possivel enviar o codigo de confirmacao no momento.", StatusCodes.Status500InternalServerError);
             }
+
+            await _usuarioRepository.AtualizarSolicitacaoAlteracaoEmailAsync(
+                usuario.ID,
+                novoEmail,
+                codigo,
+                expiracao);
 
             return (true, "Codigo de confirmacao enviado para o novo email.", StatusCodes.Status200OK);
         }
